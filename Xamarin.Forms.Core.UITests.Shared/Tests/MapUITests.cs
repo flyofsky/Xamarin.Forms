@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace Xamarin.Forms.Core.UITests
 {
-#if __ANDROID__ || __WINDOWS__
+#if __ANDROID__ || __WINDOWS__ || __TIZEN__
 	[Ignore("Test only meant for Mac and iOS, besides needing API keys for Android and Windows")]
 #endif
 	[TestFixture]

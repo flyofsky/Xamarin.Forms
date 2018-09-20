@@ -197,6 +197,24 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				return result;
 			}
+
+#elif __TIZEN__
+
+			if (TryConvertFloat(prop, out result))
+			{
+				return result;
+			}
+
+			if (TryConvertDouble(prop, out result))
+			{
+				return result;
+			}
+
+			if (TryConvertFont(prop, out result))
+			{
+				return result;
+			}
+
 #endif
 
 			if (TryConvertBool(prop, out result))

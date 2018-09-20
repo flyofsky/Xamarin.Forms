@@ -164,7 +164,7 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.VisualElement.Rotation, PlatformViewType);
 			remote.GoTo ();
 
-#if __ANDROID__
+#if __ANDROID__ || __TIZEN__
 			var rotation = remote.GetProperty<float> (View.RotationProperty);
 			Assert.AreEqual (10.0f, rotation);
 #endif
@@ -185,7 +185,7 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.VisualElement.RotationX, PlatformViewType);
 			remote.GoTo ();
 
-#if __ANDROID__
+#if __ANDROID__ || __TIZEN__
 			var rotationX = remote.GetProperty<float> (View.RotationXProperty);
 			Assert.AreEqual (33.0f, rotationX);
 #endif
@@ -206,7 +206,7 @@ namespace Xamarin.Forms.Core.UITests
 			var remote = new ViewContainerRemote (App, Test.VisualElement.RotationY, PlatformViewType);
 			remote.GoTo ();
 
-#if __ANDROID__
+#if __ANDROID__ || __TIZEN__
 			var rotationY = remote.GetProperty<float> (View.RotationYProperty);
 			Assert.AreEqual (10.0f, rotationY);
 #endif
@@ -228,6 +228,9 @@ namespace Xamarin.Forms.Core.UITests
 			remote.GoTo();
 #if __MACOS__
 			Assert.Inconclusive("needs testing");
+#elif __TIZEN__
+			var scale = remote.GetProperty<double> (View.ScaleProperty);
+			Assert.AreEqual (0.5d, scale);
 #else
 #if __WINDOWS__
 			Assert.Inconclusive(PleaseInspect);
