@@ -108,6 +108,8 @@ namespace Xamarin.Forms.Core.UITests
 		{
 #if __WINDOWS__
 			return app.Query(WinDriverApp.AppName)[0].Rect;
+#elif __TIZEN__
+			return app.Query(TizenDriverApp.AppMainPageId)[0].Rect;
 #else
 			return app.Query(q => q.Raw("* index:0"))[0].Rect;
 #endif
