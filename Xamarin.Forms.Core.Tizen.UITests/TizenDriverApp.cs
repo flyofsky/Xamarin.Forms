@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -698,17 +698,11 @@ namespace Xamarin.Forms.Core.UITests
 
 		static PointF GetBottomRightOfBoundingRectangle(TizenElement element)
 		{
-			string vpcpString = element.GetAttribute("BoundingRectangle");
+			float vpx = element.Location.X;
+			float vpy = element.Location.Y;
 
-			// returned string format looks like:
-			// Left:-1868 Top:382 Width:1013 Height:680
-
-			string[] vpparts = vpcpString.Split(new[] { ':', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			float vpx = float.Parse(vpparts[1]);
-			float vpy = float.Parse(vpparts[3]);
-
-			float vpw = float.Parse(vpparts[5]);
-			float vph = float.Parse(vpparts[7]);
+			float vpw = element.Size.Width;
+			float vph = element.Size.Height;
 
 			return new PointF(vpx + vpw, vpy + vph);
 		}
@@ -725,30 +719,18 @@ namespace Xamarin.Forms.Core.UITests
 
 		static PointF GetOriginOfBoundingRectangle(TizenElement element)
 		{
-			string vpcpString = element.GetAttribute("BoundingRectangle");
-
-			// returned string format looks like:
-			// Left:-1868 Top:382 Width:1013 Height:680
-
-			string[] vpparts = vpcpString.Split(new[] { ':', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			float vpx = float.Parse(vpparts[1]);
-			float vpy = float.Parse(vpparts[3]);
+			float vpx = element.Location.X;
+			float vpy = element.Location.Y;
 
 			return new PointF(vpx, vpy);
 		}
 
 		static PointF GetTopRightOfBoundingRectangle(TizenElement element)
 		{
-			string vpcpString = element.GetAttribute("BoundingRectangle");
+			float vpx = element.Location.X;
+			float vpy = element.Location.Y;
 
-			// returned string format looks like:
-			// Left:-1868 Top:382 Width:1013 Height:680
-
-			string[] vpparts = vpcpString.Split(new[] { ':', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-			float vpx = float.Parse(vpparts[1]);
-			float vpy = float.Parse(vpparts[3]);
-
-			float vpw = float.Parse(vpparts[5]);
+			float vpw = element.Size.Width;
 
 			return new PointF(vpx + vpw, vpy);
 		}
@@ -761,7 +743,7 @@ namespace Xamarin.Forms.Core.UITests
 			}
 
 			ReadOnlyCollection<TizenElement> candidates = QueryTizen(AppMainPageId);
-			_viewPort = candidates[3]; // We really just want the viewport; skip the full window, title bar, min/max buttons...
+			_viewPort = candidates[0]; // We really just want the viewport; skip the full window, title bar, min/max buttons...
 
 			int xOffset = _viewPort.Coordinates.LocationInViewport.X;
 

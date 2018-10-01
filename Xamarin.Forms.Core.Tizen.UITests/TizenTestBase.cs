@@ -53,7 +53,7 @@ namespace Xamarin.Forms.Core.UITests
 			try
 			{
 				Debug.WriteLine($">>>>> TizenTestBase Reset");
-				Session?.Keyboard?.PressKey(Keys.Escape);
+				Session?.ResetApp();
 			}
 			catch (Exception ex)
 			{
