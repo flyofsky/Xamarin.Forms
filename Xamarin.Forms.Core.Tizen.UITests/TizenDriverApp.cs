@@ -6,9 +6,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Appium.Tizen;
+using OpenQA.Selenium.Remote;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
@@ -42,8 +45,6 @@ namespace Xamarin.Forms.Core.UITests
 			{ "getText", "Text" },
 		};
 
-		int _scrollBarOffset = 5;
-
 		TizenElement _viewPort;
 
 		TizenElement _window;
@@ -57,7 +58,7 @@ namespace Xamarin.Forms.Core.UITests
 		public void Back()
 		{
 			_session.Navigate().Back();
-			//QueryTizen("Back").First().Click();
+			Thread.Sleep(2000);
 		}
 
 		public void ClearText(Func<AppQuery, AppQuery> query)
@@ -114,24 +115,36 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void DragCoordinates(float fromX, float fromY, float toX, float toY)
 		{
-			throw new NotImplementedException();
+			TouchAction action = new TouchAction(_session);
+			action.Press(fromX, fromY);
+			action.MoveTo(toX, toY);
+			action.Release();
+			action.Perform();
+			Thread.Sleep(2000);
 		}
 
 		public void EnterText(string text)
 		{
 			_session.Keyboard.SendKeys(text);
-		}
-
-		public void EnterText(Func<AppQuery, AppQuery> query, string text)
-		{
-			TizenElement element = QueryTizen(query).First();
-			element.SendKeys(text);
+			Thread.Sleep(1000);
 		}
 
 		public void EnterText(string marked, string text)
 		{
 			TizenElement element = QueryTizen(marked).First();
+			element.Clear();
+			element.Click();
 			element.SendKeys(text);
+			Thread.Sleep(1000);
+		}
+
+		public void EnterText(Func<AppQuery, AppQuery> query, string text)
+		{
+			TizenElement element = QueryTizen(query).First();
+			element.Clear();
+			element.Click();
+			element.SendKeys(text);
+			Thread.Sleep(1000);
 		}
 
 		public void EnterText(Func<AppQuery, AppWebQuery> query, string text)
@@ -200,7 +213,8 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void PressEnter()
 		{
-			_session.Keyboard.PressKey(Keys.Enter);
+			_session.PressKeyCode("Return");
+			_session.ReleaseKeyCode("Return");
 		}
 
 		public void PressVolumeDown()
@@ -255,12 +269,6 @@ namespace Xamarin.Forms.Core.UITests
 			string attribute = _translatePropertyAccessor[invoke.Substring(8).Replace("\")", "")];
 
 			ReadOnlyCollection<TizenElement> elements = QueryTizen(tizenQuery);
-
-			foreach (TizenElement e in elements)
-			{
-				string x = e.GetAttribute(attribute);
-				Debug.WriteLine($">>>>> TizenDriverApp Query 261: {x}");
-			}
 
 			// TODO hartez 2017/07/19 17:09:14 Alas, for now this simply doesn't work. Waiting for TizenAppDriver to implement it	
 			return elements.Select(e => (T)Convert.ChangeType(e.GetAttribute(attribute), typeof(T))).ToArray();
@@ -495,19 +503,10 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void TapCoordinates(float x, float y)
 		{
-			// Okay, this one's a bit complicated. For some reason, _session.Tap() with coordinates does not work
-			// (Filed https://github.com/Microsoft/WinAppDriver/issues/229 for that)
-			// But we can do the equivalent by manipulating the mouse. The mouse methods all take an ICoordinates
-			// object, and you'd think that the "coordinates" part of ICoordinates would have something do with 
-			// where the mouse clicks. You'd be wrong. The coordinates parts of that object are ignored and it just
-			// clicks the center of whatever TizenElement the ICoordinates refers to in 'AuxiliaryLocator'
+			var _touch = new TouchAction(_session);
 
-			// If we could just use the element, we wouldn't be tapping at specific coordinates, so that's not 
-			// very helpful.
-
-			// Instead, we'll use MouseClickAt
-
-			MouseClickAt(x, y);
+			_touch.Tap(x, y);
+			_touch.Perform();
 		}
 
 		public ITestServer TestServer { get; }
@@ -580,41 +579,8 @@ namespace Xamarin.Forms.Core.UITests
 		public void ContextClick(string marked)
 		{
 			TizenElement element = QueryTizen(marked).First();
-			PointF point = ElementToClickablePoint(element);
-
-			MouseClickAt(point.X, point.Y, ClickType.ContextClick);
-		}
-
-		internal void MouseClickAt(float x, float y, ClickType clickType = ClickType.SingleClick)
-		{
-			// Mouse clicking with ICoordinates doesn't work the way we'd like (see TapCoordinates comments),
-			// so we have to do some math on our own to get the mouse in the right spot
-
-			// So here's how we're working around it for the moment:
-			// 1. Get the Window viewport (which is a known-to-exist element)
-			// 2. Using the Window's ICoordinates and the MouseMove() overload with x/y offsets, move the pointer
-			//		to the location we care about
-			// 3. Use the (undocumented, except in https://github.com/Microsoft/WinAppDriver/issues/118#issuecomment-269404335)
-			//		null parameter for Mouse.Click() to click at the current pointer location
-
-			TizenElement viewPort = GetViewPort();
-			int xOffset = viewPort.Coordinates.LocationInViewport.X;
-			int yOffset = viewPort.Coordinates.LocationInViewport.Y;
-			_session.Mouse.MouseMove(viewPort.Coordinates, (int)x - xOffset, (int)y - yOffset);
-
-			switch (clickType)
-			{
-				case ClickType.DoubleClick:
-					_session.Mouse.DoubleClick(null);
-					break;
-				case ClickType.ContextClick:
-					_session.Mouse.ContextClick(null);
-					break;
-				case ClickType.SingleClick:
-				default:
-					_session.Mouse.Click(null);
-					break;
-			}
+			element.Click();
+			Thread.Sleep(1000);
 		}
 
 		void ClickOrTapElement(TizenElement element)
@@ -631,16 +597,9 @@ namespace Xamarin.Forms.Core.UITests
 
 				// All is not lost; we can figure out the location of the element in in the application window
 				// and Tap in that spot
-				PointF p = ElementToClickablePoint(element);
+				PointF p = GetClickablePoint(element);
 				TapCoordinates(p.X, p.Y);
 			}
-		}
-
-		void DoubleClickElement(TizenElement element)
-		{
-			PointF point = ElementToClickablePoint(element);
-
-			MouseClickAt(point.X, point.Y, clickType: ClickType.DoubleClick);
 		}
 
 		void DoubleTap(TizenQuery query)
@@ -652,35 +611,11 @@ namespace Xamarin.Forms.Core.UITests
 				return;
 			}
 
-			DoubleClickElement(element);
-		}
+			TouchAction _touch = new TouchAction(_session);
+			var count = 1;
 
-		PointF ElementToClickablePoint(TizenElement element)
-		{
-			PointF clickablePoint = GetClickablePoint(element);
-
-			TizenElement window = GetWindow();
-			PointF origin = GetOriginOfBoundingRectangle(window);
-
-			// Use the coordinates in the app window's viewport relative to the window's origin
-			return new PointF(clickablePoint.X - origin.X, clickablePoint.Y - origin.Y);
-		}
-
-		ReadOnlyCollection<TizenElement> FilterControlType(IEnumerable<TizenElement> elements, string controlType)
-		{
-			string tag = controlType;
-
-			if (tag == "*")
-			{
-				return new ReadOnlyCollection<TizenElement>(elements.ToList());
-			}
-
-			if (_controlNameToTag.ContainsKey(controlType))
-			{
-				tag = _controlNameToTag[controlType];
-			}
-
-			return new ReadOnlyCollection<TizenElement>(elements.Where(element => element.TagName == tag).ToList());
+			_touch.Tap(element, null, null, 2);
+			_touch.Perform();
 		}
 
 		TizenElement FindFirstElement(TizenQuery query)
@@ -698,41 +633,27 @@ namespace Xamarin.Forms.Core.UITests
 
 		static PointF GetBottomRightOfBoundingRectangle(TizenElement element)
 		{
-			float vpx = element.Location.X;
-			float vpy = element.Location.Y;
+			var location = element.Location;
+			var size = element.Size;
 
-			float vpw = element.Size.Width;
-			float vph = element.Size.Height;
-
-			return new PointF(vpx + vpw, vpy + vph);
+			return new PointF(location.X + size.Width, location.Y + size.Height);
 		}
 
 		static PointF GetClickablePoint(TizenElement element)
 		{
-			string cpString = element.GetAttribute("ClickablePoint");
-			string[] parts = cpString.Split(',');
-			float x = float.Parse(parts[0]);
-			float y = float.Parse(parts[1]);
+			var location = element.Location;
+			var size = element.Size;
 
-			return new PointF(x, y);
-		}
-
-		static PointF GetOriginOfBoundingRectangle(TizenElement element)
-		{
-			float vpx = element.Location.X;
-			float vpy = element.Location.Y;
-
-			return new PointF(vpx, vpy);
+			return new PointF (location.X + size.Width / 2, location.Y + size.Height / 2);
 		}
 
 		static PointF GetTopRightOfBoundingRectangle(TizenElement element)
 		{
-			float vpx = element.Location.X;
-			float vpy = element.Location.Y;
+			var location = element.Location;
 
-			float vpw = element.Size.Width;
+			float width = element.Size.Width;
 
-			return new PointF(vpx + vpw, vpy);
+			return new PointF(location.X + width, location.Y);
 		}
 
 		TizenElement GetViewPort()
@@ -750,7 +671,6 @@ namespace Xamarin.Forms.Core.UITests
 			if (xOffset > 1) // Everything having to do with scrolling right now is a horrid kludge
 			{
 				// This makes the scrolling stuff work correctly on a higher density screen (e.g. MBP running Windows) 
-				_scrollBarOffset = -70;
 			}
 
 			return _viewPort;
@@ -767,21 +687,22 @@ namespace Xamarin.Forms.Core.UITests
 			return _window;
 		}
 
-		void OriginMouse()
-		{
-			TizenElement viewPort = GetViewPort();
-			int xOffset = viewPort.Coordinates.LocationInViewport.X;
-			int yOffset = viewPort.Coordinates.LocationInViewport.Y;
-			_session.Mouse.MouseMove(viewPort.Coordinates, xOffset, yOffset);
-		}
-
 		ReadOnlyCollection<TizenElement> QueryTizen(TizenQuery query)
 		{
 			ReadOnlyCollection<TizenElement> resultByAccessibilityId = _session.FindElementsByAccessibilityId(query.Marked);
-			ReadOnlyCollection<TizenElement> resultByName = _session.FindElementsByName(query.Marked);
-			IEnumerable<TizenElement> result = resultByAccessibilityId.Concat(resultByName);
 
-            return FilterControlType(result, query.ControlType);
+			IEnumerable<TizenElement> result;
+
+			if (resultByAccessibilityId.Count > 0)
+		{
+				result = resultByAccessibilityId;
+		}
+			else
+		{
+				result = _session.FindElementsByName(query.Marked);
+			}
+
+			return new ReadOnlyCollection<TizenElement>(result.ToList());
 		}
 
 		ReadOnlyCollection<TizenElement> QueryTizen(string marked)
@@ -798,38 +719,14 @@ namespace Xamarin.Forms.Core.UITests
 
 		void Scroll(TizenQuery query, bool down)
 		{
-			if (query == null)
+			var remoteTouchScreen = new RemoteTouchScreen(_session);
+			int ySpped = -200;
+			if (!down)
 			{
-				ScrollClick(GetWindow(), down);
-				return;
+				ySpped = 200;
 			}
-
-			TizenElement element = FindFirstElement(query);
-
-			ScrollClick(element, down);
-		}
-
-		void ScrollClick(TizenElement element, bool down = true)
-		{
-			PointF point = down ? GetBottomRightOfBoundingRectangle(element) : GetTopRightOfBoundingRectangle(element);
-
-			PointF origin = GetOriginOfBoundingRectangle(GetWindow());
-
-			var realPoint = new PointF(point.X - origin.X, point.Y - origin.Y);
-
-			int xOffset = _scrollBarOffset;
-			if (origin.X < 0)
-			{
-				// The scrollbar's in a slightly different place relative to the window bounds
-				// if we're running on the left monitor (which I like to do)
-				xOffset = xOffset * 3;
-			}
-
-			float finalX = realPoint.X - xOffset;
-			float finalY = realPoint.Y - (down ? 15 : -15);
-
-			OriginMouse();
-			MouseClickAt(finalX, finalY, ClickType.SingleClick);
+			remoteTouchScreen.Flick(0, ySpped);
+			Thread.Sleep(2000);
 		}
 
 		void ScrollTo(TizenQuery toQuery, TizenQuery withinQuery, TimeSpan? timeout = null, bool down = true)
@@ -879,19 +776,23 @@ namespace Xamarin.Forms.Core.UITests
 				return;
 			}
 
-			ClickOrTapElement(element);
+			element.Click();
+			Thread.Sleep(1000);
 		}
 
 		static AppRect ToAppRect(TizenElement TizenElement)
 		{
 			try
 			{
+				var location = TizenElement.Location;
+				var size = TizenElement.Size;
+
 				var result = new AppRect
 				{
-					X = TizenElement.Location.X,
-					Y = TizenElement.Location.Y,
-					Height = TizenElement.Size.Height,
-					Width = TizenElement.Size.Width
+					X = location.X,
+					Y = location.Y,
+					Height = size.Height,
+					Width = size.Width
 				};
 
 				result.CenterX = result.X + result.Width / 2;
@@ -933,6 +834,7 @@ namespace Xamarin.Forms.Core.UITests
 			timeoutMessage = timeoutMessage ?? "Timed out on query.";
 
 			DateTime start = DateTime.Now;
+
 			ReadOnlyCollection<TizenElement> result = query();
 
 			while (!satisfactory(result.Count))
