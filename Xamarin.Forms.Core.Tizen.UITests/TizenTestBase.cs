@@ -1,35 +1,34 @@
 ﻿using System;
 using System.Diagnostics;
 using NUnit.Framework;
-using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Tizen;
-using OpenQA.Selenium.Remote;
 using Xamarin.UITest;
 
 namespace Xamarin.Forms.Core.UITests
 {
 	public class TizenTestBase
 	{
-		protected const string TizenApplicationDriverUrl = "http://192.168.0.49:4723:4723/wd/hub";
+		protected const string TizenApplicationDriverUrl = "http://192.168.0.49:4723/wd/hub";
 		protected static TizenDriver<TizenElement> Session;
 
 		public static IApp ConfigureApp()
 		{
 			if (Session == null)
 			{
-				//TODO
-				DesiredCapabilities appCapabilities = new DesiredCapabilities();
+				AppiumOptions appiumOptions = new AppiumOptions();
 
-				appCapabilities.SetCapability("platformName", "Tizen");
+				appiumOptions.AddAdditionalCapability("platformName", "Tizen");
 				//TM1
-				appCapabilities.SetCapability("deviceName", "0000d84200006200");
+				appiumOptions.AddAdditionalCapability("deviceName", "0000d84200006200");
 				//For Emul
-				//appCapabilities.SetCapability("deviceName", "emulator-26101");
+				//appiumOptions.AddAdditionalCapability("deviceName", "emulator-26101");
 
-				appCapabilities.SetCapability("appPackage", "ControlGallery.Tizen");
+				appiumOptions.AddAdditionalCapability("appPackage", "ControlGallery.Tizen");
+
 				//appCapabilities.SetCapability("app", "ControlGallery.Tizen-1.0.0.tpk");
 
-				Session = new TizenDriver<TizenElement>(new Uri(TizenApplicationDriverUrl), appCapabilities);
+				Session = new TizenDriver<TizenElement>(new Uri(TizenApplicationDriverUrl), appiumOptions);
 				Assert.IsNotNull(Session);
 				//Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
 				//Reset();

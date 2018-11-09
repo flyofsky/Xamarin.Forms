@@ -125,8 +125,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void EnterText(string text)
 		{
-			_session.Keyboard.SendKeys(text);
-			Thread.Sleep(1000);
+			throw new NotImplementedException();
 		}
 
 		public void EnterText(string marked, string text)
@@ -213,8 +212,8 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void PressEnter()
 		{
-			_session.PressKeyCode("Return");
-			_session.ReleaseKeyCode("Return");
+			//_session.PressKeyCode("Return");
+			//_session.ReleaseKeyCode("Return");
 		}
 
 		public void PressVolumeDown()
