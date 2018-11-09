@@ -10,8 +10,7 @@ namespace Xamarin.Forms.Core.UITests
 {
 	public class TizenTestBase
 	{
-		//protected const string TizenApplicationDriverUrl = "http://127.0.0.1:4723/wd/hub";
-		protected const string TizenApplicationDriverUrl = "http://10.113.111.156:4723/wd/hub";
+		protected const string TizenApplicationDriverUrl = "http://192.168.0.49:4723:4723/wd/hub";
 		protected static TizenDriver<TizenElement> Session;
 
 		public static IApp ConfigureApp()
@@ -23,18 +22,17 @@ namespace Xamarin.Forms.Core.UITests
 
 				appCapabilities.SetCapability("platformName", "Tizen");
 				//TM1
-				//appCapabilities.SetCapability("deviceName", "0000d84200006200");
+				appCapabilities.SetCapability("deviceName", "0000d84200006200");
 				//For Emul
-				appCapabilities.SetCapability("deviceName", "emulator-26101");
+				//appCapabilities.SetCapability("deviceName", "emulator-26101");
 
 				appCapabilities.SetCapability("appPackage", "ControlGallery.Tizen");
 				//appCapabilities.SetCapability("app", "ControlGallery.Tizen-1.0.0.tpk");
-				//appCapabilities.SetCapability("reboot", "true");
 
 				Session = new TizenDriver<TizenElement>(new Uri(TizenApplicationDriverUrl), appCapabilities);
 				Assert.IsNotNull(Session);
 				//Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
-				Reset();
+				//Reset();
 			}
 
 			return new TizenDriverApp(Session);

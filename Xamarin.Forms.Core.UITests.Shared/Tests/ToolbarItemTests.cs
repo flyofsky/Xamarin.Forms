@@ -6,6 +6,9 @@ using Xamarin.UITest.Queries;
 
 namespace Xamarin.Forms.Core.UITests
 {
+#if __TIZEN__
+	[Ignore("Will be supported.")]
+#endif
 	[TestFixture]
 	[Category(UITestCategories.ToolbarItem)]
 	[Category(UITestCategories.UwpIgnore)]
