@@ -132,7 +132,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			TizenElement element = QueryTizen(marked).First();
 			element.Clear();
-			element.Click();
 			element.SendKeys(text);
 			Thread.Sleep(1000);
 		}
@@ -141,7 +140,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			TizenElement element = QueryTizen(query).First();
 			element.Clear();
-			element.Click();
 			element.SendKeys(text);
 			Thread.Sleep(1000);
 		}
@@ -719,10 +717,10 @@ namespace Xamarin.Forms.Core.UITests
 		void Scroll(TizenQuery query, bool down)
 		{
 			var remoteTouchScreen = new RemoteTouchScreen(_session);
-			int ySpped = -200;
+			int ySpped = -50;
 			if (!down)
 			{
-				ySpped = 200;
+				ySpped = 50;
 			}
 			remoteTouchScreen.Flick(0, ySpped);
 			Thread.Sleep(2000);
