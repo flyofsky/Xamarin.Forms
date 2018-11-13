@@ -297,13 +297,12 @@ namespace Xamarin.Forms.Core.UITests
 
 			string target = "Label 99";
 
-#if __WINDOWS__ || __TIZEN__
+#if __WINDOWS__
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(3));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
 				new Drag(ScreenBounds, Drag.Direction.BottomToTop, Drag.DragLength.Medium));
 #endif
-
 			App.Screenshot("All EntryCells are present");
 		}
 
@@ -345,7 +344,7 @@ namespace Xamarin.Forms.Core.UITests
 
 			string target = "Enter text";
 
-#if __WINDOWS__ || __TIZEN__
+#if __WINDOWS__
 			App.ScrollDownTo(target, CellTestContainerId, timeout: TimeSpan.FromMinutes(1));
 #else
 			App.ScrollForElement($"* marked:'{target}'",
@@ -361,7 +360,9 @@ namespace Xamarin.Forms.Core.UITests
 			App.EnterText(PlatformQueries.EntryCellWithPlaceholder("I am a placeholder"), "Hi");
 			App.Screenshot("Entered Text");
 			App.PressEnter();
-#if !__TIZEN__
+#if __TIZEN__
+			App.NavigateBack();
+#else
 			App.WaitForElement(q => q.Marked("Entered: 1"));
 			App.Screenshot("Completed should have changed label's text");
 #endif
