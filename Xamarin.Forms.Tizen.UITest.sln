@@ -181,7 +181,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Forms.Core.Tizen.UI
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Appium", "Appium", "{8C294502-69DF-478B-BDA3-B40A8E9AA03E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tizen.Appium", "..\samsung\Tizen.Appium\Tizen.Appium.csproj", "{0FB6675A-CCFD-45FA-B9E0-8DA1B29AA556}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tizen.Appium", "..\Tizen.Appium\Tizen.Appium.csproj", "{0FB6675A-CCFD-45FA-B9E0-8DA1B29AA556}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
