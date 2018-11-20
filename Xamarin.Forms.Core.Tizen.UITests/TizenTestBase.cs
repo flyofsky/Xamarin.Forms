@@ -25,8 +25,7 @@ namespace Xamarin.Forms.Core.UITests
 				//appiumOptions.AddAdditionalCapability("deviceName", "emulator-26101");
 
 				appiumOptions.AddAdditionalCapability("appPackage", "ControlGallery.Tizen");
-
-				//appCapabilities.SetCapability("app", "ControlGallery.Tizen-1.0.0.tpk");
+				appiumOptions.AddAdditionalCapability("app", "ControlGallery.Tizen-1.0.0.tpk");
 
 				Session = new TizenDriver<TizenElement>(new Uri(TizenApplicationDriverUrl), appiumOptions);
 				Assert.IsNotNull(Session);
