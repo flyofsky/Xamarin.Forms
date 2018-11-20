@@ -120,6 +120,7 @@ namespace Xamarin.Forms.Core.UITests
 		[UiTest(typeof(ImageButton), "Command")]
 		public void Command()
 		{
+#if !__TIZEN__
 			var remote = new ViewContainerRemote(App, Test.ImageButton.Command, PlatformViewType);
 			remote.GoTo();
 
@@ -127,6 +128,7 @@ namespace Xamarin.Forms.Core.UITests
 
 			App.WaitForElement(q => q.Marked("Hello Command"));
 			App.Tap(q => q.Marked("Destroy"));
+#endif
 		}
 
 		[Test]

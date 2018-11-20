@@ -100,7 +100,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void DoubleTapCoordinates(float x, float y)
 		{
-			throw new NotImplementedException();
+			DoubleTap(null, x, y);
 		}
 
 		public void DragAndDrop(Func<AppQuery, AppQuery> from, Func<AppQuery, AppQuery> to)
@@ -210,8 +210,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void PressEnter()
 		{
-			//_session.PressKeyCode("Return");
-			//_session.ReleaseKeyCode("Return");
+			//Will be support
 		}
 
 		public void PressVolumeDown()
@@ -247,9 +246,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			AppTypedSelector<T> appTypedSelector = query(new AppQuery(QueryPlatform.iOS));
 
-			// Swiss-Army Chainsaw time
-			// We'll use reflection to dig into the query and get the element selector 
-			// and the property value invocation in text form
 			BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic;
 			Type selectorType = appTypedSelector.GetType();
 			PropertyInfo tokensProperty = selectorType.GetProperties(bindingFlags)
@@ -260,14 +256,11 @@ namespace Xamarin.Forms.Core.UITests
 			string selector = tokens[0].ToQueryString(QueryPlatform.iOS);
 			string invoke = tokens[1].ToCodeString();
 
-			// Now that we have them in text form, we can reinterpret them for Tizen
 			TizenQuery tizenQuery = TizenQuery.FromRaw(selector);
-			// TODO hartez 2017/07/19 17:08:44 Make this a bit more resilient if the translation isn't there	
 			string attribute = _translatePropertyAccessor[invoke.Substring(8).Replace("\")", "")];
 
 			ReadOnlyCollection<TizenElement> elements = QueryTizen(tizenQuery);
 
-			// TODO hartez 2017/07/19 17:09:14 Alas, for now this simply doesn't work. Waiting for TizenAppDriver to implement it	
 			return elements.Select(e => (T)Convert.ChangeType(e.GetAttribute(attribute), typeof(T))).ToArray();
 		}
 
@@ -283,7 +276,6 @@ namespace Xamarin.Forms.Core.UITests
 
 		public FileInfo Screenshot(string title)
 		{
-			// TODO hartez 2017/07/18 10:16:56 Verify that this is working; seems a bit too simple	
 			string filename = $"{title}.png";
 
 			Screenshot screenshot = _session.GetScreenshot();
@@ -399,20 +391,12 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void SetOrientationLandscape()
 		{
-			// Deliberately leaving this as a no-op for now
-			// Trying to set the orientation on the Desktop (the only version of UWP we're testing for the moment)
-			// gives us a 405 Method Not Allowed, which makes sense. Haven't figured out how to determine
-			// whether we're in a mode which allows orientation, but if we were, the next line is probably how to set it.
-			//_session.Orientation = ScreenOrientation.Landscape;
+			//Will be support
 		}
 
 		public void SetOrientationPortrait()
 		{
-			// Deliberately leaving this as a no-op for now
-			// Trying to set the orientation on the Desktop (the only version of UWP we're testing for the moment)
-			// gives us a 405 Method Not Allowed, which makes sense. Haven't figured out how to determine
-			// whether we're in a mode which allows orientation, but if we were, the next line is probably how to set it.
-			//_session.Orientation = ScreenOrientation.Portrait;
+			//Will be support
 		}
 
 		public void SetSliderValue(string marked, double value)
@@ -510,17 +494,31 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void TouchAndHold(Func<AppQuery, AppQuery> query)
 		{
-			throw new NotImplementedException();
+			TizenElement tizenElement = FindFirstElement(TizenQuery.FromQuery(query));
+			var _touch = new TouchAction(_session);
+			_touch.Press(tizenElement);
+			_touch.Wait(2000);
+			_touch.Release();
+			_touch.Perform();
 		}
 
 		public void TouchAndHold(string marked)
 		{
-			throw new NotImplementedException();
+			TizenElement tizenElement = FindFirstElement(TizenQuery.FromMarked(marked));
+			var _touch = new TouchAction(_session);
+			_touch.Press(tizenElement);
+			_touch.Wait(2000);
+			_touch.Release();
+			_touch.Perform();
 		}
 
 		public void TouchAndHoldCoordinates(float x, float y)
 		{
-			throw new NotImplementedException();
+			var _touch = new TouchAction(_session);
+			_touch.Press(x,y);
+			_touch.Wait(2000);
+			_touch.Release();
+			_touch.Perform();
 		}
 
 		public void WaitFor(Func<bool> predicate, string timeoutMessage = "Timed out waiting...", TimeSpan? timeout = null,
@@ -599,20 +597,28 @@ namespace Xamarin.Forms.Core.UITests
 			}
 		}
 
-		void DoubleTap(TizenQuery query)
+		void DoubleTap(TizenQuery query, float x = 0, float y = 0)
+		{
+			TouchAction _touch = new TouchAction(_session);
+			if (query != null)
 		{
 			TizenElement element = FindFirstElement(query);
-
 			if (element == null)
 			{
 				return;
 			}
-
-			TouchAction _touch = new TouchAction(_session);
-			var count = 1;
-
 			_touch.Tap(element, null, null, 2);
+			}
+			else if(x != 0 && y != 0)
+			{
+				_touch.Tap(x, y, 2);
+			}
+			else
+			{
+				return;
+			}
 			_touch.Perform();
+			Thread.Sleep(1000);
 		}
 
 		TizenElement FindFirstElement(TizenQuery query)
@@ -661,14 +667,9 @@ namespace Xamarin.Forms.Core.UITests
 			}
 
 			ReadOnlyCollection<TizenElement> candidates = QueryTizen(AppMainPageId);
-			_viewPort = candidates[0]; // We really just want the viewport; skip the full window, title bar, min/max buttons...
+			_viewPort = candidates[0];
 
 			int xOffset = _viewPort.Coordinates.LocationInViewport.X;
-
-			if (xOffset > 1) // Everything having to do with scrolling right now is a horrid kludge
-			{
-				// This makes the scrolling stuff work correctly on a higher density screen (e.g. MBP running Windows) 
-			}
 
 			return _viewPort;
 		}
@@ -863,13 +864,6 @@ namespace Xamarin.Forms.Core.UITests
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
 		{
 			Wait(query, i => i == 0, timeoutMessage, timeout, retryFrequency);
-		}
-
-		internal enum ClickType
-		{
-			SingleClick,
-			DoubleClick,
-			ContextClick
 		}
 	}
 }
