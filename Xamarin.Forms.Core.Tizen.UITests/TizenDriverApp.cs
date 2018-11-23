@@ -167,10 +167,7 @@ namespace Xamarin.Forms.Core.UITests
 		public object Invoke(string methodName, object[] arguments)
 		{
 			if (methodName == "ContextClick")
-			{
-				// The IApp interface doesn't have a context click concept, and mapping TouchAndHold to 
-				// context clicking would box us in if we have the option of running these tests on touch
-				// devices later. So we're going to use the back door.
+			{				
 				ContextClick(arguments[0].ToString());
 				return null;
 			}
@@ -484,41 +481,33 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void TapCoordinates(float x, float y)
 		{
-			var _touch = new TouchAction(_session);
-
-			_touch.Tap(x, y);
-			_touch.Perform();
+			TouchAction touch = new TouchAction(_session);
+			touch.Tap(x, y);
+			touch.Perform();
 		}
 
 		public ITestServer TestServer { get; }
 
 		public void TouchAndHold(Func<AppQuery, AppQuery> query)
 		{
-			TizenElement tizenElement = FindFirstElement(TizenQuery.FromQuery(query));
-			var _touch = new TouchAction(_session);
-			_touch.Press(tizenElement);
-			_touch.Wait(2000);
-			_touch.Release();
-			_touch.Perform();
+			TizenQuery tizenQuery = TizenQuery.FromQuery(query);
+			LongTap(tizenQuery);
+			
 		}
 
 		public void TouchAndHold(string marked)
 		{
-			TizenElement tizenElement = FindFirstElement(TizenQuery.FromMarked(marked));
-			var _touch = new TouchAction(_session);
-			_touch.Press(tizenElement);
-			_touch.Wait(2000);
-			_touch.Release();
-			_touch.Perform();
+			TizenQuery tizenQuery = TizenQuery.FromMarked(marked);
+			LongTap(tizenQuery);
 		}
 
 		public void TouchAndHoldCoordinates(float x, float y)
 		{
-			var _touch = new TouchAction(_session);
-			_touch.Press(x,y);
-			_touch.Wait(2000);
-			_touch.Release();
-			_touch.Perform();
+			TouchAction touch = new TouchAction(_session);
+			touch.Press(x,y);
+			touch.Wait(2000);
+			touch.Release();
+			touch.Perform();
 		}
 
 		public void WaitFor(Func<bool> predicate, string timeoutMessage = "Timed out waiting...", TimeSpan? timeout = null,
@@ -582,24 +571,20 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			try
 			{
-				// For most stuff, a simple click will work
 				element.Click();
+				Thread.Sleep(1000);
 			}
 			catch (InvalidOperationException)
 			{
-				// Some elements aren't "clickable" from an automation perspective (e.g., Frame renders as a Border
-				// with content in it; if the content is just a TextBlock, we'll end up here)
-
-				// All is not lost; we can figure out the location of the element in in the application window
-				// and Tap in that spot
 				PointF p = GetClickablePoint(element);
 				TapCoordinates(p.X, p.Y);
+				Thread.Sleep(1000);
 			}
 		}
 
 		void DoubleTap(TizenQuery query, float x = 0, float y = 0)
 		{
-			TouchAction _touch = new TouchAction(_session);
+			TouchAction touch = new TouchAction(_session);
 			if (query != null)
 		{
 			TizenElement element = FindFirstElement(query);
@@ -607,17 +592,17 @@ namespace Xamarin.Forms.Core.UITests
 			{
 				return;
 			}
-			_touch.Tap(element, null, null, 2);
+				touch.Tap(element, null, null, 2);
 			}
 			else if(x != 0 && y != 0)
 			{
-				_touch.Tap(x, y, 2);
+				touch.Tap(x, y, 2);
 			}
 			else
 			{
 				return;
 			}
-			_touch.Perform();
+			touch.Perform();
 			Thread.Sleep(1000);
 		}
 
@@ -653,7 +638,6 @@ namespace Xamarin.Forms.Core.UITests
 		static PointF GetTopRightOfBoundingRectangle(TizenElement element)
 		{
 			var location = element.Location;
-
 			float width = element.Size.Width;
 
 			return new PointF(location.X + width, location.Y);
@@ -717,7 +701,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		void Scroll(TizenQuery query, bool down)
 		{
-			var remoteTouchScreen = new RemoteTouchScreen(_session);
+			RemoteTouchScreen remoteTouchScreen = new RemoteTouchScreen(_session);
 			int ySpped = -50;
 			if (!down)
 			{
@@ -757,7 +741,6 @@ namespace Xamarin.Forms.Core.UITests
 				long elapsed = DateTime.Now.Subtract(start).Ticks;
 				if (elapsed >= timeout.Value.Ticks)
 				{
-					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
 					throw new TimeoutException($"Timed out scrolling to {toQuery}");
 				}
 
@@ -776,6 +759,22 @@ namespace Xamarin.Forms.Core.UITests
 
 			element.Click();
 			Thread.Sleep(1000);
+		}
+
+		void LongTap(TizenQuery query, int waitTime = 2000)
+		{
+			TizenElement element = FindFirstElement(query);
+
+			if (element == null)
+			{
+				return;
+			}
+
+			TouchAction touch = new TouchAction(_session);
+			touch.Press(element);
+			touch.Wait(waitTime);
+			touch.Release();
+			touch.Perform();
 		}
 
 		static AppRect ToAppRect(TizenElement TizenElement)

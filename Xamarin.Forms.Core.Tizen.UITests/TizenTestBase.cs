@@ -29,7 +29,6 @@ namespace Xamarin.Forms.Core.UITests
 
 				Session = new TizenDriver<TizenElement>(new Uri(TizenApplicationDriverUrl), appiumOptions);
 				Assert.IsNotNull(Session);
-				//Session.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
 				//Reset();
 			}
 

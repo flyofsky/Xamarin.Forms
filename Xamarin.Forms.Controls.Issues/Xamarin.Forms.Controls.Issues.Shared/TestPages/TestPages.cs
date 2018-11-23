@@ -134,7 +134,6 @@ namespace Xamarin.Forms.Controls
 
 		public static void NavigateToIssue(Type type, IApp app)
 		{
-			Debug.WriteLine("@@@@@@@@@@ NavigateToIssue @@@@@@@@@");
 			var typeIssueAttribute = type.GetTypeInfo().GetCustomAttribute<IssueAttribute>();
 
 			string cellName = "";

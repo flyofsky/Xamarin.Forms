@@ -15,14 +15,11 @@ namespace Xamarin.Forms.Core.UITests
 
 		public static TizenQuery FromMarked(string marked)
 		{
-			Debug.WriteLine($"@@@@@@@ FromMarked() -  '{marked}'");
 			return new TizenQuery("*", marked, $"* '{marked}'");
 		}
 
 		public static TizenQuery FromRaw(string raw)
 		{
-			Debug.WriteLine($">>>>> Converting raw query '{raw}' to {nameof(TizenQuery)}");
-
 			var match = Regex.Match(raw, @"(.*)\s(marked|text):'((.|\n)*)'");
 
 			var controlType = match.Groups[1].Captures[0].Value;
@@ -30,9 +27,6 @@ namespace Xamarin.Forms.Core.UITests
 
 			// Just ignoring everything else for now (parent, index statements, etc)
 			var result = new TizenQuery(controlType, marked, raw);
-
-			Debug.WriteLine($">>>>> TizenQuery is: {result}");
-
 			return result;
 		}
 
@@ -52,7 +46,6 @@ namespace Xamarin.Forms.Core.UITests
 			ControlType = controlType;
 			Marked = marked;
 			Raw = raw;
-			Debug.WriteLine($"@@@@@@@ TizenQuery() -  cotrolType :'{controlType}' ,marked :'{marked}', raw :'{raw}' ");
 		}
 
 		public string ControlType { get; }
