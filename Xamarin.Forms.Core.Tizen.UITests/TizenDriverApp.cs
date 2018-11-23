@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void DismissKeyboard()
 		{
-			// No-op for Desktop, which is all we're doing right now
+			throw new NotImplementedException();
 		}
 
 		public void DoubleTap(Func<AppQuery, AppQuery> query)
@@ -161,18 +161,12 @@ namespace Xamarin.Forms.Core.UITests
 
 		public object Invoke(string methodName, object argument = null)
 		{
-			return Invoke(methodName, new[] { argument });
+			throw new NotImplementedException();
 		}
 
 		public object Invoke(string methodName, object[] arguments)
 		{
-			if (methodName == "ContextClick")
-			{				
-				ContextClick(arguments[0].ToString());
-				return null;
-			}
-
-			return null;
+			throw new NotImplementedException();
 		}
 
 		public void PinchToZoomIn(Func<AppQuery, AppQuery> query, TimeSpan? duration = null)
@@ -207,7 +201,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void PressEnter()
 		{
-			//Will be support
+			throw new NotImplementedException();
 		}
 
 		public void PressVolumeDown()
@@ -388,12 +382,12 @@ namespace Xamarin.Forms.Core.UITests
 
 		public void SetOrientationLandscape()
 		{
-			//Will be support
+			throw new NotImplementedException();
 		}
 
 		public void SetOrientationPortrait()
 		{
-			//Will be support
+			throw new NotImplementedException();
 		}
 
 		public void SetSliderValue(string marked, double value)
@@ -492,7 +486,6 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			TizenQuery tizenQuery = TizenQuery.FromQuery(query);
 			LongTap(tizenQuery);
-			
 		}
 
 		public void TouchAndHold(string marked)
@@ -560,38 +553,16 @@ namespace Xamarin.Forms.Core.UITests
 			throw new NotImplementedException();
 		}
 
-		public void ContextClick(string marked)
-		{
-			TizenElement element = QueryTizen(marked).First();
-			element.Click();
-			Thread.Sleep(1000);
-		}
-
-		void ClickOrTapElement(TizenElement element)
-		{
-			try
-			{
-				element.Click();
-				Thread.Sleep(1000);
-			}
-			catch (InvalidOperationException)
-			{
-				PointF p = GetClickablePoint(element);
-				TapCoordinates(p.X, p.Y);
-				Thread.Sleep(1000);
-			}
-		}
-
 		void DoubleTap(TizenQuery query, float x = 0, float y = 0)
 		{
 			TouchAction touch = new TouchAction(_session);
 			if (query != null)
-		{
-			TizenElement element = FindFirstElement(query);
-			if (element == null)
 			{
-				return;
-			}
+				TizenElement element = FindFirstElement(query);
+				if (element == null)
+				{
+					return;
+				}
 				touch.Tap(element, null, null, 2);
 			}
 			else if(x != 0 && y != 0)
@@ -609,64 +580,12 @@ namespace Xamarin.Forms.Core.UITests
 		TizenElement FindFirstElement(TizenQuery query)
 		{
 			Func<ReadOnlyCollection<TizenElement>> fquery = () => QueryTizen(query);
-
 			string timeoutMessage = $"Timed out waiting for element: {query.Raw}";
 
 			ReadOnlyCollection<TizenElement> results = WaitForAtLeastOne(fquery, timeoutMessage);
-
 			TizenElement element = results.FirstOrDefault();
 
 			return element;
-		}
-
-		static PointF GetBottomRightOfBoundingRectangle(TizenElement element)
-		{
-			var location = element.Location;
-			var size = element.Size;
-
-			return new PointF(location.X + size.Width, location.Y + size.Height);
-		}
-
-		static PointF GetClickablePoint(TizenElement element)
-		{
-			var location = element.Location;
-			var size = element.Size;
-
-			return new PointF (location.X + size.Width / 2, location.Y + size.Height / 2);
-		}
-
-		static PointF GetTopRightOfBoundingRectangle(TizenElement element)
-		{
-			var location = element.Location;
-			float width = element.Size.Width;
-
-			return new PointF(location.X + width, location.Y);
-		}
-
-		TizenElement GetViewPort()
-		{
-			if (_viewPort != null)
-			{
-				return _viewPort;
-			}
-
-			ReadOnlyCollection<TizenElement> candidates = QueryTizen(AppMainPageId);
-			_viewPort = candidates[0];
-
-			int xOffset = _viewPort.Coordinates.LocationInViewport.X;
-
-			return _viewPort;
-		}
-
-		TizenElement GetWindow()
-		{
-			if (_window != null)
-			{
-				return _window;
-			}
-
-			_window = QueryTizen(AppMainPageId)[0];
-			return _window;
 		}
 
 		ReadOnlyCollection<TizenElement> QueryTizen(TizenQuery query)
@@ -676,11 +595,11 @@ namespace Xamarin.Forms.Core.UITests
 			IEnumerable<TizenElement> result;
 
 			if (resultByAccessibilityId.Count > 0)
-		{
+			{
 				result = resultByAccessibilityId;
-		}
+			}
 			else
-		{
+			{
 				result = _session.FindElementsByName(query.Marked);
 			}
 
@@ -702,12 +621,12 @@ namespace Xamarin.Forms.Core.UITests
 		void Scroll(TizenQuery query, bool down)
 		{
 			RemoteTouchScreen remoteTouchScreen = new RemoteTouchScreen(_session);
-			int ySpped = -50;
+			int ySpeed = -50;
 			if (!down)
 			{
-				ySpped = 50;
+				ySpeed = 50;
 			}
-			remoteTouchScreen.Flick(0, ySpped);
+			remoteTouchScreen.Flick(0, ySpeed);
 			Thread.Sleep(2000);
 		}
 

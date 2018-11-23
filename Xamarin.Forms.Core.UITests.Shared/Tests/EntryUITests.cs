@@ -49,10 +49,10 @@ namespace Xamarin.Forms.Core.UITests
 
 			App.EnterText(q => q.Raw(remote.ViewQuery), "Test");
 
+#if !__TIZEN__
 			App.PressEnter();
 
 			var eventLabelText = remote.GetEventLabel().Text;
-#if !__TIZEN__
 			Assert.AreEqual(eventLabelText, "Event: Completed (fired 1)");
 #endif
 		}

@@ -19,17 +19,12 @@ namespace Xamarin.Forms.Core.UITests
 				AppiumOptions appiumOptions = new AppiumOptions();
 
 				appiumOptions.AddAdditionalCapability("platformName", "Tizen");
-				//TM1
-				appiumOptions.AddAdditionalCapability("deviceName", "0000d84200006200");
-				//For Emul
-				//appiumOptions.AddAdditionalCapability("deviceName", "emulator-26101");
-
+				appiumOptions.AddAdditionalCapability("deviceName", "emulator-26101");
 				appiumOptions.AddAdditionalCapability("appPackage", "ControlGallery.Tizen");
 				appiumOptions.AddAdditionalCapability("app", "ControlGallery.Tizen-1.0.0.tpk");
 
 				Session = new TizenDriver<TizenElement>(new Uri(TizenApplicationDriverUrl), appiumOptions);
 				Assert.IsNotNull(Session);
-				//Reset();
 			}
 
 			return new TizenDriverApp(Session);
@@ -47,13 +42,11 @@ namespace Xamarin.Forms.Core.UITests
 		{
 			try
 			{
-				Debug.WriteLine($">>>>> TizenTestBase Reset");
 				Session?.ResetApp();
 			}
 			catch (Exception ex)
 			{
 				HandleAppClosed(ex);
-				Debug.WriteLine($">>>>> TizenTestBase ConfigureApp 49: {ex}");
 				throw;
 			}
 		}

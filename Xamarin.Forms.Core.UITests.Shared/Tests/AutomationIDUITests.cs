@@ -43,7 +43,7 @@ namespace Xamarin.Forms.Core.UITests
 
 
 		[Test]
-		public async Task Test2()
+		public async void Test2()
 		{
 			await Task.Delay(1000);
 			App.WaitForElement(c => c.Marked("btnTest2"));

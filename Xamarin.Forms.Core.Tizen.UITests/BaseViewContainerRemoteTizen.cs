@@ -21,6 +21,7 @@ namespace Xamarin.Forms.Core.UITests
 					return true;
 				}
 			}
+
 			return false;
 		}
 
@@ -37,12 +38,14 @@ namespace Xamarin.Forms.Core.UITests
 					return true;
 				}
 			}
+
 			return false;
 		}
 
 		bool TryConvertFont<T>(object prop, out T result)
 		{
 			result = default(T);
+
 			if (prop.GetType() == typeof(string) && typeof(T) == typeof(Font))
 			{
 				FontAttributes fontAttrs = FontAttributes.None;

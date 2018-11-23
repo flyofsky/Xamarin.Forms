@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using Xamarin.Forms.CustomAttributes;
-using System.Diagnostics;
 
 #if UITEST
 using Xamarin.Forms.Core.UITests;
